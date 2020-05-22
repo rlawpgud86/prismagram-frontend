@@ -25,17 +25,19 @@ const PostContainer = ({
   const [toggleLikeMutation] = useMutation(TOGGLE_LIKE, {
     variables: { postId: id },
   });
-  const [addCommentMutation] = useMutation(ADD_COMMENT, {
+  const [addCommentMutation, { loading }] = useMutation(ADD_COMMENT, {
     variables: { postId: id, text: comment.value },
   });
 
   useEffect(() => {
     const totalFiles = files.length;
+    let timer = null;
     if (currentItem === totalFiles - 1) {
-      setTimeout(() => setCurrentItem(0), 2000);
+      timer = setTimeout(() => setCurrentItem(0), 3000);
     } else {
-      setTimeout(() => setCurrentItem(currentItem + 1), 2000);
+      timer = setTimeout(() => setCurrentItem(currentItem + 1), 3000);
     }
+    return () => clearTimeout(timer);
   }, [currentItem, files]);
 
   const toggleLike = () => {
@@ -53,12 +55,12 @@ const PostContainer = ({
     const { which } = event;
     if (which === 13) {
       event.preventDefault();
+      comment.setValue("");
       try {
         const {
           data: { addComment },
         } = await addCommentMutation();
         setSelfComments([...selfComments, addComment]);
-        comment.setValue("");
       } catch {
         toast.error("Cant send comment");
       }
@@ -82,6 +84,7 @@ const PostContainer = ({
       toggleLike={toggleLike}
       onKeyPress={onKeyPress}
       selfComments={selfComments}
+      loading={loading}
     />
   );
 };
